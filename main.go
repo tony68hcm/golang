@@ -1,16 +1,43 @@
 package main
 
 import (
-	"bufio"
+	"002/appctx"
+	"002/router"
 	"fmt"
-	"os"
-	"time"
+
+	"github.com/gin-gonic/gin"
+	//"github.com/rs/cors/wrapper/gin"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	city, _ := reader.ReadString('\n')
-	fmt.Print("You live in " + city)
-	time.Sleep(5)
-	fmt.Println("test test")
+	fmt.Println("start")
+
+	database, err := appctx.InitMysqlDB("sql6.freemysqlhosting.net", 3306, "sql6501022", "szkJpYD8aq", "sql6501022")
+	if err != nil {
+		panic(err)
+	}
+	appCtx := appctx.NewAppContext(database)
+	fmt.Print(appCtx)
+
+	r := gin.Default()
+
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+
+	v1 := r.Group("/v1")
+
+	router.MainRoute(v1, appCtx)
+	/*
+		permission := v1.Group("/permission")
+		{
+			permission.POST("/insert", permissiongin.InsertPermission(appCtx))
+		}
+	*/
+
+	if err := r.Run(); err != nil {
+		fmt.Println("error start")
+	}
 }
